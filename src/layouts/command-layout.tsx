@@ -54,7 +54,7 @@ export function CommandLayout() {
             })}
           </nav>
         </aside>
-        <main className="flex-1 bg-[#061a38] p-3">
+        <main className="flex-1 bg-[#061a38]">
           <Outlet />
         </main>
       </div>
