@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { App } from "@/App";
 import { CommandLayout } from "@/layouts/command-layout";
 import { DashboardPage } from "@/pages/dashboard";
+import { DataBoardPage } from "@/pages/dataBoard";
 import { OrderProcessingPage } from "@/pages/order-processing";
 import { RealtimeSituationPage } from "@/pages/realtime-situation";
 
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
           {
             path: "dashboard",
             element: <DashboardPage />,
+          },
+          {
+            path: "dataBoard",
+            element: <DataBoardPage />
           },
         ],
       },

@@ -4,6 +4,7 @@ import { NavLink, Outlet } from "react-router-dom";
 const navItems = [
   { to: "/realtime", label: "实时态势", icon: Radar },
   { to: "/dashboard", label: "大盘数据", icon: LayoutDashboard },
+  { to: "/dataBoard", label: "驾驶舱", icon: LayoutDashboard },
 ];
 
 export function CommandLayout() {
