@@ -14,6 +14,8 @@ const riskItems = [
 ];
 
 export function DashboardPage() {
+  const [timeRange, setTimeRange] = useState("本周");
+
   return (
     <section className="min-h-full rounded-lg border border-cyan-200/12 bg-[#071d3c]/88 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.09),0_24px_70px_rgba(1,13,35,0.28)]">
       <div className="flex flex-col gap-3 border-b border-cyan-200/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
