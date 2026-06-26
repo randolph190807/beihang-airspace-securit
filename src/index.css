@@ -56,3 +56,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .command-nav-link {
+    transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .radar-sweep {
+    animation: radar-sweep 1s linear infinite;
+  }
+}
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

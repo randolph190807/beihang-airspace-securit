@@ -1,0 +1,43 @@
+{
+  "sceneId": "demo-city-core",
+  "title": "城市核心区低空域无人机安防反制预期效果演示",
+  "venue": {
+    "name": "某大型活动现场",
+    "center": { "x": 0.5, "y": 0.5 }
+  },
+  "zones": {
+    "warning": { "radiusNorm": 0.48, "label": "预警区", "rangeKm": 30 },
+    "track": { "radiusNorm": 0.28, "label": "跟踪区", "rangeKm": 10 },
+    "counter": { "radiusNorm": 0.12, "label": "反制区", "rangeKm": 3 }
+  },
+  "coreArea": {
+    "name": "核心会场",
+    "polygon": [
+      { "x": 0.46, "y": 0.44 },
+      { "x": 0.54, "y": 0.44 },
+      { "x": 0.54, "y": 0.56 },
+      { "x": 0.46, "y": 0.56 }
+    ]
+  },
+  "map": {
+    "viewBox": [0, 0, 1000, 1000],
+    "radarPpi": {
+      "position": { "x": 0.12, "y": 0.82 },
+      "diameterNorm": 0.18
+    }
+  },
+  "legend": [
+    { "key": "friendly", "label": "己方", "color": "#22c55e" },
+    { "key": "normal", "label": "非威胁", "color": "#38bdf8" },
+    { "key": "warning", "label": "未知", "color": "#eab308" },
+    { "key": "alert", "label": "威胁", "color": "#ef4444" },
+    { "key": "bird_flock", "label": "鸟群", "color": "#94a3b8" }
+  ],
+  "demoTiming": {
+    "alertToCoreSec": 30,
+    "unknownToCoreSec": 45,
+    "warningToCoreSec": 60,
+    "speedMultiplier": 1.0,
+    "presets": [0.5, 1.0, 1.5, 2.0]
+  }
+}

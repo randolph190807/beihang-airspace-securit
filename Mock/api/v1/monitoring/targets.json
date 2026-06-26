@@ -1,0 +1,120 @@
+{
+  "targets": [
+    {
+      "targetId": "B-101",
+      "callsign": "B-101",
+      "category": "bird_flock",
+      "role": "background",
+      "threatLevel": "none",
+      "visible": true,
+      "motion": {
+        "type": "polygonLoop",
+        "vertices": [
+          { "x": 0.25, "y": 0.3 },
+          { "x": 0.35, "y": 0.22 },
+          { "x": 0.42, "y": 0.35 },
+          { "x": 0.32, "y": 0.42 }
+        ],
+        "lapDurationSec": 90
+      }
+    },
+    {
+      "targetId": "U-001",
+      "callsign": "U-001",
+      "category": "uav",
+      "role": "background",
+      "threatLevel": "friendly",
+      "visible": true,
+      "motion": {
+        "type": "polygonLoop",
+        "vertices": [
+          { "x": 0.55, "y": 0.35 },
+          { "x": 0.68, "y": 0.4 },
+          { "x": 0.65, "y": 0.58 },
+          { "x": 0.52, "y": 0.5 }
+        ],
+        "lapDurationSec": 150
+      },
+      "metadata": { "model": "航拍机", "identity": "friendly" }
+    },
+    {
+      "targetId": "U-005",
+      "callsign": "U-005",
+      "category": "uav",
+      "role": "background",
+      "threatLevel": "friendly",
+      "visible": true,
+      "motion": {
+        "type": "polygonLoop",
+        "vertices": [
+          { "x": 0.38, "y": 0.6 },
+          { "x": 0.48, "y": 0.72 },
+          { "x": 0.58, "y": 0.62 },
+          { "x": 0.5, "y": 0.48 }
+        ],
+        "lapDurationSec": 130
+      },
+      "metadata": { "model": "航拍机", "identity": "friendly" }
+    },
+    {
+      "targetId": "U-004",
+      "callsign": "U-004",
+      "category": "uav",
+      "role": "demo",
+      "demoSegment": "alert",
+      "threatLevel": "normal",
+      "visible": false,
+      "motion": {
+        "type": "linear",
+        "from": { "x": 0.84, "y": 0.66 },
+        "to": { "x": 0.36, "y": 0.48 },
+        "toCoreSec": 30,
+        "altitude": { "from": 120, "to": 80 },
+        "speedKmh": 32,
+        "headingText": "逼近核心区域",
+        "onComplete": "hover"
+      },
+      "metadata": { "model": "四旋翼", "identity": "unknown" }
+    },
+    {
+      "targetId": "U-002",
+      "callsign": "U-002",
+      "category": "uav",
+      "role": "demo",
+      "demoSegment": "unknown",
+      "threatLevel": "normal",
+      "visible": false,
+      "motion": {
+        "type": "linear",
+        "from": { "x": 0.78, "y": 0.3 },
+        "to": { "x": 0.44, "y": 0.52 },
+        "toCoreSec": 45,
+        "altitude": { "from": 100, "to": 70 },
+        "speedKmh": 24,
+        "headingText": "朝向核心区飞行",
+        "onComplete": "hover"
+      },
+      "metadata": { "model": "未知机型", "identity": "unknown" }
+    },
+    {
+      "targetId": "U-003",
+      "callsign": "U-003",
+      "category": "uav",
+      "role": "demo",
+      "demoSegment": "warning",
+      "threatLevel": "warning",
+      "visible": false,
+      "motion": {
+        "type": "linear",
+        "from": { "x": 0.72, "y": 0.7 },
+        "to": { "x": 0.4, "y": 0.56 },
+        "toCoreSec": 60,
+        "altitude": { "from": 90, "to": 65 },
+        "speedKmh": 18,
+        "headingText": "缓慢抵近",
+        "onComplete": "hover"
+      },
+      "metadata": { "model": "四旋翼", "identity": "unknown" }
+    }
+  ]
+}
