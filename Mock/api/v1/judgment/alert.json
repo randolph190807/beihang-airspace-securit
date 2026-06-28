@@ -1,0 +1,34 @@
+{
+  "segment": "alert",
+  "title": "警报研判",
+  "aiAnalysis": {
+    "fullText": "目标 U-004 未经授权进入核心管控空域，航向持续指向核心会场，飞行高度 80m、速度 32km/h，行为符合黑飞抵近特征。综合区域规则与轨迹分析，威胁等级判定为「警报」。建议优先采用网捕缓降弹处置，兼顾坠落区安全与电磁兼容约束。",
+    "streamDelayMs": 1000
+  },
+  "approachWarning": {
+    "label": "危险逼近",
+    "description": "目标正在抵近核心保护区，请尽快完成研判并授权处置。"
+  },
+  "schemes": [
+    {
+      "id": "net-capture",
+      "name": "网捕缓降弹",
+      "recommended": true,
+      "successRate": "92%",
+      "range": "80m",
+      "risk": "低",
+      "constraint": "需确认坠落区无人群",
+      "description": "抵近下风向进射程发射，软捕获缓降，适合核心区近距处置。"
+    },
+    {
+      "id": "portable-jammer",
+      "name": "便携干扰枪",
+      "recommended": false,
+      "successRate": "78%",
+      "range": "500m",
+      "risk": "中",
+      "constraint": "电磁影响需评估",
+      "description": "断链迫降，对敏感设施电磁影响需额外评估。"
+    }
+  ]
+}

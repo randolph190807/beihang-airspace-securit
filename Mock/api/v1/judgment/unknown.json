@@ -1,0 +1,34 @@
+{
+  "segment": "unknown",
+  "title": "不明目标研判",
+  "aiAnalysis": {
+    "fullText": "目标身份尚未确认，当前轨迹朝向核心区域，高度与速度处于常见消费级无人机区间。建议结合监控记录进一步识别；若确认为威胁，可手动标记为「警报」或「预警」后进入对应处置流程。",
+    "streamDelayMs": 1000
+  },
+  "approachWarning": {
+    "label": "身份待确认",
+    "description": "不明飞行物持续接近管控区域，请完成识别或手动定级。"
+  },
+  "schemes": [
+    {
+      "id": "observe",
+      "name": "持续跟踪监视",
+      "recommended": true,
+      "successRate": "—",
+      "range": "—",
+      "risk": "低",
+      "constraint": "需人工确认后再处置",
+      "description": "保持光电与雷达联合跟踪，待身份确认后再选择处置手段。"
+    },
+    {
+      "id": "portable-jammer",
+      "name": "便携干扰枪",
+      "recommended": false,
+      "successRate": "78%",
+      "range": "500m",
+      "risk": "中",
+      "constraint": "需先标记为警报/预警",
+      "description": "定级为威胁后方可授权使用。"
+    }
+  ]
+}

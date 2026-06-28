@@ -1,0 +1,6 @@
+{
+  "targetId": "U-002",
+  "manualOverride": "alert",
+  "effectiveSegment": "alert",
+  "threatLevel": "alert"
+}

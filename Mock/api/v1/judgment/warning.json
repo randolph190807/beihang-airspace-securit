@@ -1,0 +1,34 @@
+{
+  "segment": "warning",
+  "title": "预警研判",
+  "aiAnalysis": {
+    "fullText": "目标 U-003 处于未知预警状态，飞行速度较低但持续向核心区域靠近。当前威胁未达警报阈值，建议加强跟踪并准备预案；若态势升级可标记为警报或授权软处置手段。",
+    "streamDelayMs": 1000
+  },
+  "approachWarning": {
+    "label": "预警跟踪",
+    "description": "目标在预警/跟踪区内活动，请关注航向变化。"
+  },
+  "schemes": [
+    {
+      "id": "sonic",
+      "name": "声波驱离",
+      "recommended": true,
+      "successRate": "65%",
+      "range": "200m",
+      "risk": "低",
+      "constraint": "对人群噪声影响可控",
+      "description": "非破坏性驱离，适用于预警级别目标的先期干预。"
+    },
+    {
+      "id": "portable-jammer",
+      "name": "便携干扰枪",
+      "recommended": false,
+      "successRate": "78%",
+      "range": "500m",
+      "risk": "中",
+      "constraint": "电磁影响需评估",
+      "description": "态势升级时可切换为硬处置手段。"
+    }
+  ]
+}

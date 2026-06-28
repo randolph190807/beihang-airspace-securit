@@ -57,6 +57,24 @@
   }
 }
 
+@layer components {
+  .command-nav-link {
+    transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .radar-sweep {
+    animation: radar-sweep 1s linear infinite;
+  }
+}
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 /* 卡片淡入 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(12px) scale(0.98); }
