@@ -4,6 +4,7 @@ import { CommandLayout } from "@/layouts/command-layout";
 import { DashboardPage } from "@/pages/dashboard";
 import { DataBoardPage } from "@/pages/dataBoard";
 import { OrderProcessingPage } from "@/pages/order-processing";
+import { MobileDisposeOrder } from "@/pages/mobile";
 import { RealtimeSituationPage } from "@/pages/realtime-situation";
 
 export const router = createBrowserRouter([
@@ -32,9 +33,13 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      {
+{
         path: "orders",
         element: <OrderProcessingPage />,
+      },
+      {
+        path: "mobile",
+        element: <MobileDisposeOrder />,
       },
     ],
   },
