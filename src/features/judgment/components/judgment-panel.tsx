@@ -153,8 +153,7 @@ export function JudgmentPanel({ className }: { className?: string }) {
                   size="sm"
                   className="shrink-0 text-gray-800/80 text-xs p-2 h-8 bg-gray-100"
                 >
-                  {selectedManualTag?.label ?? "标记飞行物"}
-                  <ChevronDown className="ml-2 h-4 w-4" />
+                  {selectedManualTag?.label ?? "点击标记飞行物"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
