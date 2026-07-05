@@ -2,9 +2,11 @@ export type DemoSegment = "alert" | "unknown" | "warning";
 export type MotionType = "polygonLoop" | "linear";
 export type MotionState = "idle" | "flying" | "hovering" | "disposed";
 export type ZoneLevel = "outside" | "warning" | "track" | "counter";
+export type AircraftType = "fixed_wing" | "multirotor" | "helicopter" | "unknown";
 export type ThreatLevel =
   | "friendly"
   | "normal"
+  | "unknown"
   | "warning"
   | "alert"
   | "none"
@@ -45,7 +47,9 @@ export interface TargetDefinition {
   visible: boolean;
   motion: TargetMotion;
   metadata?: {
+    sn?: string;
     model?: string;
+    aircraftType?: AircraftType;
     identity?: string;
   };
 }
@@ -115,6 +119,7 @@ export const THREAT_COLORS: Record<ThreatLevel, string> = {
   friendly: "#22c55e",
   none: "#94a3b8",
   normal: "#38bdf8",
+  unknown: "#374151",
   warning: "#eab308",
   alert: "#ef4444",
   disposed: "#64748b",

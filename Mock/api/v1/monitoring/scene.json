@@ -29,8 +29,9 @@
   "legend": [
     { "key": "friendly", "label": "己方", "color": "#22c55e" },
     { "key": "normal", "label": "非威胁", "color": "#38bdf8" },
-    { "key": "warning", "label": "未知", "color": "#eab308" },
-    { "key": "alert", "label": "威胁", "color": "#ef4444" },
+    { "key": "unknown", "label": "未知", "color": "#374151" },
+    { "key": "warning", "label": "预警", "color": "#eab308" },
+    { "key": "alert", "label": "警报", "color": "#ef4444" },
     { "key": "bird_flock", "label": "鸟群", "color": "#94a3b8" }
   ],
   "demoTiming": {

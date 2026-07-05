@@ -16,7 +16,8 @@
           { "x": 0.32, "y": 0.42 }
         ],
         "lapDurationSec": 90
-      }
+      },
+      "metadata": { "sn": "unknown", "model": "鸟群目标", "aircraftType": "unknown", "identity": "unknown" }
     },
     {
       "targetId": "U-001",
@@ -35,7 +36,7 @@
         ],
         "lapDurationSec": 150
       },
-      "metadata": { "model": "航拍机", "identity": "friendly" }
+      "metadata": { "sn": "SN-AIR-240901", "model": "巡检-多旋翼", "aircraftType": "multirotor", "identity": "friendly" }
     },
     {
       "targetId": "U-005",
@@ -54,7 +55,7 @@
         ],
         "lapDurationSec": 130
       },
-      "metadata": { "model": "航拍机", "identity": "friendly" }
+      "metadata": { "sn": "SN-AIR-240517", "model": "测绘-固定翼", "aircraftType": "fixed_wing", "identity": "friendly" }
     },
     {
       "targetId": "U-004",
@@ -62,7 +63,7 @@
       "category": "uav",
       "role": "demo",
       "demoSegment": "alert",
-      "threatLevel": "normal",
+      "threatLevel": "alert",
       "visible": false,
       "motion": {
         "type": "linear",
@@ -74,7 +75,7 @@
         "headingText": "逼近核心区域",
         "onComplete": "hover"
       },
-      "metadata": { "model": "四旋翼", "identity": "unknown" }
+      "metadata": { "sn": "SN-ALR-884210", "model": "多旋翼侦察机", "aircraftType": "multirotor", "identity": "unknown" }
     },
     {
       "targetId": "U-002",
@@ -82,7 +83,7 @@
       "category": "uav",
       "role": "demo",
       "demoSegment": "unknown",
-      "threatLevel": "normal",
+      "threatLevel": "unknown",
       "visible": false,
       "motion": {
         "type": "linear",
@@ -94,7 +95,7 @@
         "headingText": "朝向核心区飞行",
         "onComplete": "hover"
       },
-      "metadata": { "model": "未知机型", "identity": "unknown" }
+      "metadata": { "sn": "unknown", "model": "未知机型", "aircraftType": "unknown", "identity": "unknown" }
     },
     {
       "targetId": "U-003",
@@ -114,7 +115,7 @@
         "headingText": "缓慢抵近",
         "onComplete": "hover"
       },
-      "metadata": { "model": "四旋翼", "identity": "unknown" }
+      "metadata": { "sn": "SN-WRN-442031", "model": "无人直升机", "aircraftType": "helicopter", "identity": "unknown" }
     }
   ]
 }

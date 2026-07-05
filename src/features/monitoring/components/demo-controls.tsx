@@ -1,43 +1,162 @@
+import { useCallback, useEffect, useRef } from "react";
 import { useMonitoring } from "@/features/monitoring/monitoring-context";
-import type { DemoSegment } from "@/features/monitoring/types";
+import { type ThreatLevel } from "@/features/monitoring/types";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
-const SEGMENTS: Array<{ segment: DemoSegment; label: string }> = [
-  { segment: "alert", label: "警报" },
-  { segment: "unknown", label: "不明" },
-  { segment: "warning", label: "预警" },
-];
+const THREAT_PRIORITY: Record<ThreatLevel, number> = {
+  alert: 5,
+  warning: 4,
+  unknown: 3,
+  normal: 2,
+  friendly: 2,
+  none: 1,
+  disposed: 0,
+};
 
-export function DemoControls() {
+function threatLabel(level: ThreatLevel) {
+  const map: Record<ThreatLevel, string> = {
+    friendly: "己方",
+    none: "鸟群",
+    normal: "非威胁",
+    unknown: "未知",
+    warning: "预警",
+    alert: "警报",
+    disposed: "已处置",
+  };
+  return map[level];
+}
+
+function ThreatNotifier({ onProcessTarget }: { onProcessTarget?: (targetId: string) => void }) {
+  const { targets } = useMonitoring();
+  const previousThreatRef = useRef<Record<string, ThreatLevel>>({});
+  const notifiedAlertIdsRef = useRef<Set<string>>(new Set());
+  const notifiedEscalationKeysRef = useRef<Set<string>>(new Set());
+  const activeToastIdRef = useRef<string | number | null>(null);
+
+  const showExclusiveToast = useCallback(
+    (
+      id: string,
+      variant: "error" | "warning",
+      title: string,
+      description: string,
+      targetId: string,
+    ) => {
+      if (activeToastIdRef.current && activeToastIdRef.current !== id) {
+        toast.dismiss(activeToastIdRef.current);
+      }
+
+      toast[variant](title, {
+        id,
+        description,
+        duration: 12000,
+        action: onProcessTarget
+          ? {
+              label: "处理",
+              onClick: () => {
+                onProcessTarget(targetId);
+                toast.dismiss(id);
+              },
+            }
+          : undefined,
+        onDismiss: () => {
+          if (activeToastIdRef.current === id) {
+            activeToastIdRef.current = null;
+          }
+        },
+      });
+
+      activeToastIdRef.current = id;
+    },
+    [onProcessTarget],
+  );
+
+  useEffect(() => {
+    const nextThreatMap: Record<string, ThreatLevel> = {};
+    const activeAlertIds = new Set<string>();
+
+    for (const target of targets) {
+      nextThreatMap[target.targetId] = target.threatLevel;
+      const previousThreat = previousThreatRef.current[target.targetId];
+
+      if (target.visible && target.threatLevel === "alert") {
+        activeAlertIds.add(target.targetId);
+
+        if (!notifiedAlertIdsRef.current.has(target.targetId)) {
+          showExclusiveToast(
+            `threat-alert-${target.targetId}`,
+            "error",
+            `${target.callsign} 当前处于高危警报状态`,
+            "目标已进入高危态势，请尽快研判处置。",
+            target.targetId,
+          );
+          notifiedAlertIdsRef.current.add(target.targetId);
+        }
+      }
+
+      if (
+        target.visible &&
+        previousThreat &&
+        THREAT_PRIORITY[target.threatLevel] > THREAT_PRIORITY[previousThreat]
+      ) {
+        const escalationKey = `${target.targetId}-${previousThreat}-${target.threatLevel}`;
+
+        if (!notifiedEscalationKeysRef.current.has(escalationKey)) {
+          showExclusiveToast(
+            `threat-rise-${target.targetId}-${target.threatLevel}`,
+            "warning",
+            `${target.callsign} 危险等级升高至${threatLabel(target.threatLevel)}`,
+            "建议立即进入研判面板确认处置方案。",
+            target.targetId,
+          );
+          notifiedEscalationKeysRef.current.add(escalationKey);
+        }
+      }
+    }
+
+    previousThreatRef.current = nextThreatMap;
+    notifiedAlertIdsRef.current.forEach((targetId) => {
+      if (activeAlertIds.has(targetId)) return;
+      notifiedAlertIdsRef.current.delete(targetId);
+      const toastId = `threat-alert-${targetId}`;
+      toast.dismiss(toastId);
+      if (activeToastIdRef.current === toastId) {
+        activeToastIdRef.current = null;
+      }
+    });
+  }, [showExclusiveToast, targets]);
+
+  return null;
+}
+
+export function DemoControls({
+  onProcessTarget,
+}: {
+  onProcessTarget?: (targetId: string) => void;
+}) {
   const {
     scene,
     showTrack,
+    hideNonThreat,
     toggleTrack,
-    startSegment,
+    toggleHideNonThreat,
     startAll,
     resetDemo,
-    speedMultiplier,
-    setSpeedMultiplier,
   } = useMonitoring();
 
   if (!scene) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-cyan-200/10 bg-[#06162f]/80 px-4 py-3">
-      {SEGMENTS.map(({ segment, label }) => (
-        <button
-          key={segment}
-          type="button"
-          onClick={() => void startSegment(segment)}
-          className="rounded-md border border-cyan-200/20 bg-cyan-200/10 px-3 py-1.5 text-sm text-cyan-50 hover:bg-cyan-200/20"
-        >
-          {label}
-        </button>
-      ))}
-
+    <div
+      className={cn([
+        "h-14",
+        "flex flex-wrap items-center gap-2 rounded-t-md border-cyan-200/10  px-3 py-2 bg-[#06162f] border-b z-[1]",
+      ])}
+    >
       <button
         type="button"
         onClick={() => void startAll()}
-        className="rounded-md border border-amber-200/25 bg-amber-300/15 px-3 py-1.5 text-sm font-medium text-amber-100 hover:bg-amber-300/25"
+        className="rounded border border-amber-200/25 bg-amber-300/15 px-2.5 py-1 text-xs font-medium text-amber-100 hover:bg-amber-300/25"
       >
         全部开始
       </button>
@@ -45,12 +164,39 @@ export function DemoControls() {
       <button
         type="button"
         onClick={() => void resetDemo()}
-        className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-blue-100/70 hover:bg-white/5"
+        className="rounded border border-white/10 px-2.5 py-1 text-xs text-blue-100/70 hover:bg-white/5"
       >
         重置
       </button>
 
-      <label className="ml-auto flex items-center gap-2 text-sm text-blue-100/65">
+      <ThreatNotifier onProcessTarget={onProcessTarget} />
+
+      <div className="ml-2 inline-flex items-center gap-2 text-[11px] text-blue-100/55">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-red-500" />
+          警报
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-amber-400" />
+          预警
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-gray-700" />
+          未知
+        </span>
+      </div>
+
+      <label className="flex items-center gap-2 text-xs text-blue-100/65 xl:ml-auto">
+        <input
+          type="checkbox"
+          checked={hideNonThreat}
+          onChange={toggleHideNonThreat}
+          className="rounded border-cyan-200/30"
+        />
+        隐藏非威胁
+      </label>
+
+      <label className="flex items-center gap-2 text-xs text-blue-100/65">
         <input
           type="checkbox"
           checked={showTrack}
@@ -59,25 +205,6 @@ export function DemoControls() {
         />
         显示航迹
       </label>
-
-      <div className="flex items-center gap-2 text-sm text-blue-100/65">
-        <span>速度</span>
-        {scene.demoTiming.presets.map((preset) => (
-          <button
-            key={preset}
-            type="button"
-            onClick={() => void setSpeedMultiplier(preset)}
-            className={[
-              "rounded px-2 py-1 text-xs",
-              speedMultiplier === preset
-                ? "bg-cyan-200/20 text-cyan-50"
-                : "border border-white/10 text-blue-100/55 hover:bg-white/5",
-            ].join(" ")}
-          >
-            {preset}×
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

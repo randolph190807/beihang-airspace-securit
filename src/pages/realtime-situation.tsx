@@ -1,15 +1,15 @@
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { DemoControls } from "@/features/monitoring/components/demo-controls";
 import { MapCanvas } from "@/features/monitoring/components/map-canvas";
 import { StatusBar } from "@/features/monitoring/components/status-bar";
 import { TargetList } from "@/features/monitoring/components/target-list";
 import { JudgmentPanel } from "@/features/judgment/components/judgment-panel";
-import {
-  MonitoringProvider,
-  useMonitoring,
-} from "@/features/monitoring/monitoring-context";
+import { MonitoringProvider, useMonitoring } from "@/features/monitoring/monitoring-context";
+import { useState } from "react";
 
 function RealtimeContent() {
-  const { loading, error } = useMonitoring();
+  const { loading, error, selectTarget, targets } = useMonitoring();
+  const [panelOpen, setPanelOpen] = useState(false);
 
   if (loading) {
     return (
@@ -27,17 +27,42 @@ function RealtimeContent() {
     );
   }
 
+  const openJudgmentPanel = (targetId: string) => {
+    const target = targets.find((item) => item.targetId === targetId);
+    if (target?.visible && target.role === "demo") {
+      setPanelOpen(true);
+    }
+  };
+
+  const handleThreatProcess = (targetId: string) => {
+    const target = targets.find((item) => item.targetId === targetId);
+    if (!target?.visible || target.role !== "demo") return;
+
+    selectTarget(targetId);
+    setPanelOpen(true);
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-[calc(100vh-7.5rem)] flex-col gap-3 overflow-hidden">
       <StatusBar />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px_minmax(300px,360px)]">
-        <div className="flex flex-col gap-3">
-          <MapCanvas />
-          <DemoControls />
-        </div>
-        <TargetList />
-        <JudgmentPanel />
+      <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <MapCanvas onTargetSelect={openJudgmentPanel}>
+          <DemoControls onProcessTarget={handleThreatProcess} />
+        </MapCanvas>
+        <TargetList onTargetSelect={openJudgmentPanel} />
       </div>
+      <Drawer
+        open={panelOpen}
+        onOpenChange={(open) => {
+          setPanelOpen(open);
+        }}
+      >
+        <DrawerContent>
+          <div className="min-h-0 flex-1">
+            <JudgmentPanel className="h-full rounded-none border-0 bg-transparent" />
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
