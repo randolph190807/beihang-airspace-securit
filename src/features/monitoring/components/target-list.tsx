@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import {
   AlertTriangle,
   Bird,
-  Fingerprint,
   Plane,
   Radar,
   ScanSearch,
@@ -258,15 +257,6 @@ export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: str
                 }}
               >
                 <ul className="space-y-2 text-xs">
-                  <li className="flex items-center justify-between gap-3">
-                    <span className="flex items-center gap-1.5 text-blue-100/40">
-                      <Fingerprint className="h-3.5 w-3.5" />
-                      SN
-                    </span>
-                    <span className="font-mono text-cyan-50">
-                      {target.metadata?.sn ?? "unknown"}
-                    </span>
-                  </li>
                   <li className="flex items-center justify-between gap-3">
                     <span className="flex items-center gap-1.5 text-blue-100/40">
                       <ScanSearch className="h-3.5 w-3.5" />

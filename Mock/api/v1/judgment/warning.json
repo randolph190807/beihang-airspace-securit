@@ -11,14 +11,14 @@
   },
   "schemes": [
     {
-      "id": "sonic",
-      "name": "声波驱离",
+      "id": "net-capture",
+      "name": "网捕缓降弹",
       "recommended": true,
-      "successRate": "65%",
-      "range": "200m",
+      "successRate": "84%",
+      "range": "80m",
       "risk": "低",
-      "constraint": "对人群噪声影响可控",
-      "description": "非破坏性驱离，适用于预警级别目标的先期干预。"
+      "constraint": "需确认坠落区安全",
+      "description": "目标进入近距预警态势后，可提前部署网捕缓降，避免继续逼近核心区域。"
     },
     {
       "id": "portable-jammer",

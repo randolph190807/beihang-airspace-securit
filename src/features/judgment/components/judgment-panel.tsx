@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Brain, Check, ChevronDown, ClipboardList } from "lucide-react";
+import { Brain, Check, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -47,6 +47,8 @@ const MANUAL_TAG_OPTIONS: Array<{ tag: ManualTag; label: string }> = [
   { tag: "normal", label: "标记无风险" },
 ];
 
+const ALLOWED_SCHEME_IDS = new Set(["net-capture", "portable-jammer"]);
+
 function getRecommendedScheme(schemes: DispositionScheme[]) {
   if (schemes.length === 0) return null;
 
@@ -83,9 +85,10 @@ export function JudgmentPanel({ className }: { className?: string }) {
     setSelectedSchemeId(null);
   }, [streamKey]);
 
-  const schemes = template?.schemes ?? [];
+  const schemes = (template?.schemes ?? []).filter((scheme) => ALLOWED_SCHEME_IDS.has(scheme.id));
   const recommendedScheme = useMemo(() => getRecommendedScheme(schemes), [schemes]);
   const activeSchemeId = selectedSchemeId ?? (aiDone ? recommendedScheme?.id : null) ?? null;
+  const isDemoTarget = target?.role === "demo";
   const selectedManualTag = useMemo(() => {
     const options =
       target?.demoSegment === "unknown"
@@ -98,7 +101,7 @@ export function JudgmentPanel({ className }: { className?: string }) {
   const dispatched = target ? isDispatched(target.targetId) : false;
   const dispatchEnabled = !dispatched && !!activeSchemeId;
 
-  if (!target || target.role !== "demo" || !target.visible) {
+  if (!target || !target.visible) {
     return (
       <aside
         className={cn(
@@ -135,43 +138,45 @@ export function JudgmentPanel({ className }: { className?: string }) {
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: THREAT_COLORS[target.threatLevel] }}
             />
-            <h1>当前目标 {target.callsign}</h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 text-gray-800/80 text-xs p-2 h-8 bg-gray-100"
-                >
-                  {selectedManualTag?.label ?? "点击标记飞行物"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {MANUAL_TAG_OPTIONS.map((option) => (
-                  <DropdownMenuItem
-                    key={option.tag}
-                    onSelect={() => void applyManualTag(target.targetId, option.tag)}
-                    className="justify-between"
+            <h1>{isDemoTarget ? `当前目标 ${target.callsign}` : `目标详情 ${target.callsign}`}</h1>
+            {isDemoTarget && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 h-8 bg-gray-100 p-2 text-xs text-gray-800/80"
                   >
-                    <span>{option.label}</span>
-                    {target.manualOverride === option.tag && (
-                      <Check className="h-4 w-4 text-cyan-200" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-                {target.demoSegment === "unknown" && (
-                  <DropdownMenuItem
-                    onSelect={() => void applyManualTag(target.targetId, "warning")}
-                    className="justify-between"
-                  >
-                    <span>标记预警</span>
-                    {target.manualOverride === "warning" && (
-                      <Check className="h-4 w-4 text-cyan-200" />
-                    )}
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    {selectedManualTag?.label ?? "点击标记飞行物"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {MANUAL_TAG_OPTIONS.map((option) => (
+                    <DropdownMenuItem
+                      key={option.tag}
+                      onSelect={() => void applyManualTag(target.targetId, option.tag)}
+                      className="justify-between"
+                    >
+                      <span>{option.label}</span>
+                      {target.manualOverride === option.tag && (
+                        <Check className="h-4 w-4 text-cyan-200" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                  {target.demoSegment === "unknown" && (
+                    <DropdownMenuItem
+                      onSelect={() => void applyManualTag(target.targetId, "warning")}
+                      className="justify-between"
+                    >
+                      <span>标记预警</span>
+                      {target.manualOverride === "warning" && (
+                        <Check className="h-4 w-4 text-cyan-200" />
+                      )}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
         <p className="mt-1 text-xs text-blue-100/45"></p>
@@ -217,37 +222,42 @@ export function JudgmentPanel({ className }: { className?: string }) {
           </dl>
         </section>
 
-        <section className="rounded-md border border-gray-400/60 bg-gray-700/80 p-3 m-3">
-          <h4 className="mb-3 text-sm font-medium text-cyan-100">监控记录</h4>
-          {target.behaviorTimeline.length === 0 ? (
-            <p className="text-xs text-blue-100/45">等待目标进入管控区域…</p>
-          ) : (
-            <ul className="space-y-2">
-              {target.behaviorTimeline.map((event) => (
-                <li key={event.id} className="flex gap-3 text-xs text-blue-100/70">
-                  <span className="shrink-0 font-mono text-cyan-100/55">{event.timestamp}</span>
-                  <span>{event.label}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {isDemoTarget && (
+          <>
+            <section className="m-3 rounded-md border border-gray-400/60 bg-gray-700/80 p-3">
+              <h4 className="mb-3 text-sm font-medium text-cyan-100">监控记录</h4>
+              {target.behaviorTimeline.length === 0 ? (
+                <p className="text-xs text-blue-100/45">等待目标进入管控区域…</p>
+              ) : (
+                <ul className="space-y-2">
+                  {target.behaviorTimeline.map((event) => (
+                    <li key={event.id} className="flex gap-3 text-xs text-blue-100/70">
+                      <span className="shrink-0 font-mono text-cyan-100/55">{event.timestamp}</span>
+                      <span>{event.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
-        <section className="rounded-md border border-gray-400/60 bg-gray-700/80 p-3 m-3">
-          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-cyan-100">
-            <Brain className="h-4 w-4" />
-            AI 判定
-            {!aiDone && aiText && (
-              <span className="ml-auto text-[10px] text-cyan-200/45">输出中…</span>
-            )}
-          </h4>
-          {loading && <p className="text-xs text-blue-100/45">加载研判模板…</p>}
-          {error && <p className="text-xs text-red-300">{error}</p>}
-          {!loading && !error && <p className="text-xs leading-6 text-blue-100/75">{aiText}</p>}
-        </section>
+            <section className="m-3 rounded-md border border-gray-400/60 bg-gray-700/80 p-3">
+              <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-cyan-100">
+                <Brain className="h-4 w-4" />
+                AI 判定
+                {!aiDone && aiText && (
+                  <span className="ml-auto text-[10px] text-cyan-200/45">输出中…</span>
+                )}
+              </h4>
+              {loading && <p className="text-xs text-blue-100/45">加载研判模板…</p>}
+              {error && <p className="text-xs text-red-300">{error}</p>}
+              {!loading && !error && <p className="text-xs leading-6 text-blue-100/75">{aiText}</p>}
+            </section>
+          </>
+        )}
       </div>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-cyan-200/10 bg-[#06162f]/95 p-4 backdrop-blur">
+      {isDemoTarget && (
+        <div className="sticky bottom-0 shrink-0 border-t border-cyan-200/10 bg-[#06162f]/95 p-4 backdrop-blur">
         {schemes.length > 0 && (
           <section className="">
             <div className="mb-3 empty:hidden">
@@ -322,7 +332,8 @@ export function JudgmentPanel({ className }: { className?: string }) {
         >
           {dispatched ? "已下发处置，等待处置结果" : "一键下发现场处理方案"}
         </button>
-      </div>
+        </div>
+      )}
     </aside>
   );
 }
