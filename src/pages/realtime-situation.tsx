@@ -29,7 +29,7 @@ function RealtimeContent() {
 
   const openJudgmentPanel = (targetId: string) => {
     const target = targets.find((item) => item.targetId === targetId);
-    if (target?.visible && target.role === "demo") {
+    if (target?.visible) {
       setPanelOpen(true);
     }
   };

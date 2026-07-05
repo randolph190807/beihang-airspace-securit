@@ -1,4 +1,5 @@
 import type {
+  DemoSegment,
   ManualTag,
   SceneConfig,
   TargetDefinition,
@@ -13,6 +14,34 @@ export function initialEffectiveSegment(
 ): TargetRuntime["effectiveSegment"] {
   if (target.demoSegment === "alert") return "alert";
   if (target.demoSegment === "warning") return "warning";
+  return "unknown";
+}
+
+export function resolveEffectiveSegment(
+  target: Pick<TargetRuntime, "baselineThreat" | "category" | "demoSegment" | "manualOverride">,
+  zone: ZoneLevel,
+): DemoSegment | "unknown" {
+  if (target.manualOverride === "alert") return "alert";
+  if (target.manualOverride === "warning") return "warning";
+  if (target.manualOverride === "friendly" || target.manualOverride === "normal") {
+    return "unknown";
+  }
+
+  if (target.baselineThreat === "friendly" || target.baselineThreat === "none") {
+    return "unknown";
+  }
+
+  if (target.category === "bird_flock") return "unknown";
+  if (target.demoSegment === "alert") return "alert";
+  if (target.demoSegment === "warning") return "warning";
+  if (target.demoSegment === "unknown") {
+    if (zone === "counter") return "alert";
+    if (zone === "track") return "warning";
+    return "unknown";
+  }
+
+  if (zone === "counter") return "alert";
+  if (zone === "track") return "warning";
   return "unknown";
 }
 
@@ -82,7 +111,8 @@ export function resolveThreatLevel(
   if (target.demoSegment === "unknown") {
     if (zone === "outside") return "unknown";
     if (zone === "track") return "warning";
-    return "alert";
+    if (zone === "counter") return "alert";
+    return "normal";
   }
 
   if (zone === "counter") return "alert";

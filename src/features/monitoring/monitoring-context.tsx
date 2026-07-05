@@ -28,6 +28,7 @@ import {
   countAlerts,
   createRuntimeFromDefinition,
   getZoneRadii,
+  resolveEffectiveSegment,
   resolveThreatLevel,
 } from "@/features/monitoring/lib/target-utils";
 import { appendZoneBehaviorEvents } from "@/features/monitoring/lib/behavior-timeline";
@@ -64,6 +65,12 @@ interface MonitoringContextValue {
 }
 
 const MonitoringContext = createContext<MonitoringContextValue | null>(null);
+
+function resetEffectiveSegment(segment?: DemoSegment) {
+  if (segment === "alert") return "alert";
+  if (segment === "warning") return "warning";
+  return "unknown";
+}
 
 function recomputeTarget(
   target: TargetRuntime,
@@ -116,6 +123,7 @@ function recomputeTarget(
 
   const zone = detectZone(position, center, zoneRadii);
   const threatLevel = resolveThreatLevel({ ...target, zone }, zone);
+  const effectiveSegment = resolveEffectiveSegment(target, zone);
 
   let trackPoints = target.trackPoints;
   if (
@@ -136,6 +144,7 @@ function recomputeTarget(
     altitudeM,
     zone,
     threatLevel,
+    effectiveSegment,
     motionState,
     trackPoints,
     updatedAt: new Date().toISOString(),
@@ -269,6 +278,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
           position: { ...startPos },
           trackPoints: [],
           behaviorTimeline: [],
+          effectiveSegment: resetEffectiveSegment(target.demoSegment),
         };
       }),
     );
@@ -306,6 +316,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
           position: { ...startPos },
           trackPoints: [],
           behaviorTimeline: [],
+          effectiveSegment: resetEffectiveSegment(target.demoSegment),
         };
       }),
     );

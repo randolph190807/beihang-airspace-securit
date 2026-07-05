@@ -4,7 +4,6 @@ import { normToViewBox } from "@/features/monitoring/lib/coordinates";
 import { MapScaleControl, clampMapScale } from "@/features/monitoring/components/map-scale-control";
 import { THREAT_COLORS, type ThreatLevel } from "@/features/monitoring/types";
 import { cn } from "@/lib/utils";
-import bg2 from "@/static/6b960a34a10faacc10d5192b2a0dd5a3.png";
 
 const NON_DANGEROUS_LEVELS: ThreatLevel[] = ["friendly", "none", "normal"];
 
@@ -71,6 +70,10 @@ export function MapCanvas({
   };
 
   const coreCenter = normToViewBox(getPolygonCenter(scene.coreArea.polygon), scene.map.viewBox);
+  const corePolygonPoints = scene.coreArea.polygon
+    .map((point) => normToViewBox(point, scene.map.viewBox))
+    .map((point) => `${point.x},${point.y}`)
+    .join(" ");
 
   const visibleTargets = targets.filter((target) => {
     if (!target.visible) return false;
@@ -91,18 +94,20 @@ export function MapCanvas({
     >
       {children ? <div className="relative z-10">{children}</div> : null}
       <MapScaleControl value={mapScale} onChange={(value) => setMapScale(clampMapScale(value))} />
-      <img
-        src={bg2}
-        alt=""
+      <div
         aria-hidden="true"
-        className="absolute w-full h-full scale-[200%] object-cover opacity-60"
+        className="absolute inset-0 z-[0]"
         style={{
           transform: `scale(${mapScale})`,
           transformOrigin: "center center",
           transition: "transform 160ms ease-out",
+          backgroundColor: "rgba(244, 245, 247, 0.94)",
+          backgroundImage:
+            "linear-gradient(to right, rgba(203,213,225,0.72) 1px, transparent 1px), linear-gradient(to bottom, rgba(203,213,225,0.72) 1px, transparent 1px)",
+          backgroundSize: "10px 10px",
         }}
       />
-      <div className="absolute inset-0 z-[0] bg-gray-100/40 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 z-[0] bg-white/20 backdrop-blur-[0px]" />
 
       <svg
         viewBox={`${vx} ${vy} ${vw} ${vh}`}
@@ -170,23 +175,17 @@ export function MapCanvas({
           strokeWidth={3}
         />
 
-        <text
-          x={coreCenter.x}
-          y={coreCenter.y + 14}
-          textAnchor="middle"
-          fill="rgba(127,29,29,0.95)"
-          stroke="rgba(255,255,255,0.92)"
-          strokeWidth={1.2}
-          paintOrder="stroke"
-          fontSize={40}
-          fontWeight={700}
-        >
-          ☆
-        </text>
+        <polygon
+          points={corePolygonPoints}
+          fill={zoneStyles.core.fill}
+          stroke={zoneStyles.core.stroke}
+          strokeWidth={4}
+          strokeLinejoin="round"
+        />
 
         <text
           x={coreCenter.x}
-          y={coreCenter.y + 42}
+          y={coreCenter.y + 28}
           textAnchor="middle"
           fill="rgba(127,29,29,0.95)"
           stroke="rgba(255,255,255,0.92)"
