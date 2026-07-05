@@ -12,11 +12,13 @@ import { useMonitoring } from "@/features/monitoring/monitoring-context";
 import { THREAT_COLORS, type AircraftType, type ThreatLevel } from "@/features/monitoring/types";
 
 const NODE_LEGENDS = [
-  { label: "鸟群", color: THREAT_COLORS.none, Icon: Bird },
-  { label: "己方", color: THREAT_COLORS.friendly, Icon: ShieldCheck },
-  { label: "非危险", color: THREAT_COLORS.normal, Icon: ScanSearch },
-  { label: "告警", color: THREAT_COLORS.alert, Icon: AlertTriangle },
+  { key: "bird", label: "鸟群", color: THREAT_COLORS.none, Icon: Bird },
+  { key: "friendly", label: "己方", color: THREAT_COLORS.friendly, Icon: ShieldCheck },
+  { key: "normal", label: "非危险", color: THREAT_COLORS.normal, Icon: ScanSearch },
+  { key: "alert", label: "告警", color: THREAT_COLORS.alert, Icon: AlertTriangle },
 ] as const;
+
+type LegendFilterKey = (typeof NODE_LEGENDS)[number]["key"] | null;
 
 const THREAT_PRIORITY: Record<ThreatLevel, number> = {
   alert: 5,
@@ -67,6 +69,7 @@ function targetIcon(target: { category: string; threatLevel: ThreatLevel }) {
 export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: string) => void }) {
   const { targets, selectedTargetId, selectTarget, scene, alertCounts } = useMonitoring();
   const [animatedTargetIds, setAnimatedTargetIds] = useState<string[]>([]);
+  const [activeFilter, setActiveFilter] = useState<LegendFilterKey>(null);
   const previousThreatRef = useRef<Record<string, ThreatLevel>>({});
   const animationTimeoutRef = useRef<number | null>(null);
 
@@ -76,12 +79,19 @@ export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: str
     () =>
       targets
         .filter((target) => target.visible)
+        .filter((target) => {
+          if (!activeFilter) return true;
+          if (activeFilter === "bird") return target.category === "bird_flock";
+          if (activeFilter === "friendly") return target.threatLevel === "friendly";
+          if (activeFilter === "normal") return target.threatLevel === "normal";
+          return target.threatLevel === "alert" || target.threatLevel === "warning";
+        })
         .sort((a, b) => {
           const priorityDiff = THREAT_PRIORITY[b.threatLevel] - THREAT_PRIORITY[a.threatLevel];
           if (priorityDiff !== 0) return priorityDiff;
           return a.callsign.localeCompare(b.callsign);
         }),
-    [targets],
+    [activeFilter, targets],
   );
 
   useEffect(() => {
@@ -138,23 +148,39 @@ export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: str
           </span>
         </div>
         <div className="flex flex-wrap gap-2 border-t px-3 h-10 items-center justify-start border-cyan-200/10">
-          {NODE_LEGENDS.map(({ label, color, Icon }) => (
-            <span
-              key={label}
-              className="w-6 h-6 inline-flex items-center justify-center  rounded-full border  text-[11px] text-blue-100/60"
-              style={{
-                borderColor: `${color}26`,
-                backgroundColor: `${color}12`,
-              }}
-            >
-              <Icon className="h-3.5 w-3.5" style={{ color }} />
-              {/* {label} */}
-            </span>
-          ))}
+          {NODE_LEGENDS.map(({ key, label, color, Icon }) => {
+            const active = activeFilter === key;
+
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setActiveFilter((current) => (current === key ? null : key))}
+                title={label}
+                className={[
+                  "inline-flex h-6 w-6 items-center justify-center rounded-full border text-[11px] text-blue-100/60 transition-all",
+                  active
+                    ? "scale-110 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+                    : "hover:bg-white/5",
+                ].join(" ")}
+                style={{
+                  borderColor: active ? `${color}AA` : `${color}26`,
+                  backgroundColor: active ? `${color}24` : `${color}12`,
+                }}
+              >
+                <Icon className="h-3.5 w-3.5" style={{ color }} />
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
+        {list.length === 0 && (
+          <div className="flex h-full items-center justify-center rounded-lg border border-cyan-200/10 bg-white/[0.02] text-sm text-blue-100/45">
+            当前筛选下暂无目标
+          </div>
+        )}
         {list.map((target) => {
           const active = selectedTargetId === target.targetId;
           const isThreatAnimating = animatedTargetIds.includes(target.targetId);

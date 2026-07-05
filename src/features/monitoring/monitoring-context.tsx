@@ -119,10 +119,10 @@ function recomputeTarget(
 
   let trackPoints = target.trackPoints;
   if (
-    showTrack &&
     target.role === "demo" &&
     motionState === "flying" &&
-    target.motion.type === "linear"
+    target.motion.type === "linear" &&
+    (showTrack || target.dispositionStatus === "in_progress")
   ) {
     const last = trackPoints[trackPoints.length - 1];
     if (!last || distPoint(last, position) > 0.002) {
@@ -360,7 +360,12 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
     setTargets((prev) =>
       prev.map((target) =>
         target.targetId === targetId
-          ? { ...target, dispositionStatus: "in_progress" }
+          ? {
+              ...target,
+              dispositionStatus: "in_progress",
+              trackPoints:
+                target.trackPoints.length > 0 ? target.trackPoints : [{ ...target.position }],
+            }
           : target,
       ),
     );

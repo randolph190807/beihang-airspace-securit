@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useMonitoring } from "@/features/monitoring/monitoring-context";
 import { type ThreatLevel } from "@/features/monitoring/types";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,44 @@ function ThreatNotifier({ onProcessTarget }: { onProcessTarget?: (targetId: stri
   const previousThreatRef = useRef<Record<string, ThreatLevel>>({});
   const notifiedAlertIdsRef = useRef<Set<string>>(new Set());
   const notifiedEscalationKeysRef = useRef<Set<string>>(new Set());
+  const activeToastIdRef = useRef<string | number | null>(null);
+
+  const showExclusiveToast = useCallback(
+    (
+      id: string,
+      variant: "error" | "warning",
+      title: string,
+      description: string,
+      targetId: string,
+    ) => {
+      if (activeToastIdRef.current && activeToastIdRef.current !== id) {
+        toast.dismiss(activeToastIdRef.current);
+      }
+
+      toast[variant](title, {
+        id,
+        description,
+        duration: 12000,
+        action: onProcessTarget
+          ? {
+              label: "处理",
+              onClick: () => {
+                onProcessTarget(targetId);
+                toast.dismiss(id);
+              },
+            }
+          : undefined,
+        onDismiss: () => {
+          if (activeToastIdRef.current === id) {
+            activeToastIdRef.current = null;
+          }
+        },
+      });
+
+      activeToastIdRef.current = id;
+    },
+    [onProcessTarget],
+  );
 
   useEffect(() => {
     const nextThreatMap: Record<string, ThreatLevel> = {};
@@ -43,17 +81,13 @@ function ThreatNotifier({ onProcessTarget }: { onProcessTarget?: (targetId: stri
         activeAlertIds.add(target.targetId);
 
         if (!notifiedAlertIdsRef.current.has(target.targetId)) {
-          toast.error(`${target.callsign} 当前处于高危警报状态`, {
-            id: `threat-alert-${target.targetId}`,
-            description: "目标已进入高危态势，请尽快研判处置。",
-            duration: 12000,
-            action: onProcessTarget
-              ? {
-                  label: "处理",
-                  onClick: () => onProcessTarget(target.targetId),
-                }
-              : undefined,
-          });
+          showExclusiveToast(
+            `threat-alert-${target.targetId}`,
+            "error",
+            `${target.callsign} 当前处于高危警报状态`,
+            "目标已进入高危态势，请尽快研判处置。",
+            target.targetId,
+          );
           notifiedAlertIdsRef.current.add(target.targetId);
         }
       }
@@ -66,17 +100,13 @@ function ThreatNotifier({ onProcessTarget }: { onProcessTarget?: (targetId: stri
         const escalationKey = `${target.targetId}-${previousThreat}-${target.threatLevel}`;
 
         if (!notifiedEscalationKeysRef.current.has(escalationKey)) {
-          toast.warning(`${target.callsign} 危险等级升高至${threatLabel(target.threatLevel)}`, {
-            id: `threat-rise-${target.targetId}-${target.threatLevel}`,
-            description: "建议立即进入研判面板确认处置方案。",
-            duration: 12000,
-            action: onProcessTarget
-              ? {
-                  label: "处理",
-                  onClick: () => onProcessTarget(target.targetId),
-                }
-              : undefined,
-          });
+          showExclusiveToast(
+            `threat-rise-${target.targetId}-${target.threatLevel}`,
+            "warning",
+            `${target.callsign} 危险等级升高至${threatLabel(target.threatLevel)}`,
+            "建议立即进入研判面板确认处置方案。",
+            target.targetId,
+          );
           notifiedEscalationKeysRef.current.add(escalationKey);
         }
       }
@@ -86,9 +116,13 @@ function ThreatNotifier({ onProcessTarget }: { onProcessTarget?: (targetId: stri
     notifiedAlertIdsRef.current.forEach((targetId) => {
       if (activeAlertIds.has(targetId)) return;
       notifiedAlertIdsRef.current.delete(targetId);
-      toast.dismiss(`threat-alert-${targetId}`);
+      const toastId = `threat-alert-${targetId}`;
+      toast.dismiss(toastId);
+      if (activeToastIdRef.current === toastId) {
+        activeToastIdRef.current = null;
+      }
     });
-  }, [onProcessTarget, targets]);
+  }, [showExclusiveToast, targets]);
 
   return null;
 }

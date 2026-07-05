@@ -8,6 +8,25 @@ import bg2 from "@/static/6b960a34a10faacc10d5192b2a0dd5a3.png";
 
 const NON_DANGEROUS_LEVELS: ThreatLevel[] = ["friendly", "none", "normal"];
 
+function getPolygonCenter(points: Array<{ x: number; y: number }>) {
+  if (points.length === 0) {
+    return { x: 0, y: 0 };
+  }
+
+  const total = points.reduce(
+    (acc, point) => ({
+      x: acc.x + point.x,
+      y: acc.y + point.y,
+    }),
+    { x: 0, y: 0 },
+  );
+
+  return {
+    x: total.x / points.length,
+    y: total.y / points.length,
+  };
+}
+
 export function MapCanvas({
   children,
   onTargetSelect,
@@ -51,16 +70,16 @@ export function MapCanvas({
     },
   };
 
-  const corePoints = scene.coreArea.polygon
-    .map((p) => normToViewBox(p, scene.map.viewBox))
-    .map((p) => `${p.x},${p.y}`)
-    .join(" ");
+  const coreCenter = normToViewBox(getPolygonCenter(scene.coreArea.polygon), scene.map.viewBox);
 
   const visibleTargets = targets.filter((target) => {
     if (!target.visible) return false;
     if (!hideNonThreat) return true;
     return !NON_DANGEROUS_LEVELS.includes(target.threatLevel);
   });
+
+  const shouldRenderTrack = (target: (typeof visibleTargets)[number]) =>
+    (showTrack || target.dispositionStatus === "in_progress") && target.trackPoints.length >= 2;
 
   return (
     <div
@@ -127,29 +146,39 @@ export function MapCanvas({
           r={radii.counter}
           fill={zoneStyles.counter.fill}
           stroke={zoneStyles.counter.stroke}
-          strokeWidth={4}
-        />
-
-        <polygon
-          points={corePoints}
-          fill={zoneStyles.core.fill}
-          stroke={zoneStyles.core.stroke}
-          strokeWidth={4}
+          strokeWidth={3}
         />
 
         <text
-          x={center.x}
-          y={center.y - radii.counter - 12}
+          x={coreCenter.x}
+          y={coreCenter.y + 14}
           textAnchor="middle"
           fill="rgba(127,29,29,0.95)"
-          fontSize={30}
-          fontWeight={500}
+          stroke="rgba(255,255,255,0.92)"
+          strokeWidth={1.2}
+          paintOrder="stroke"
+          fontSize={40}
+          fontWeight={700}
+        >
+          ☆
+        </text>
+
+        <text
+          x={coreCenter.x}
+          y={coreCenter.y + 42}
+          textAnchor="middle"
+          fill="rgba(127,29,29,0.95)"
+          stroke="rgba(255,255,255,0.92)"
+          strokeWidth={1.2}
+          paintOrder="stroke"
+          fontSize={24}
+          fontWeight={600}
         >
           {scene.coreArea.name}
         </text>
 
         {visibleTargets.map((target) => {
-          if (!showTrack || target.trackPoints.length < 2) return null;
+          if (!shouldRenderTrack(target)) return null;
           const points = target.trackPoints
             .map((p) => normToViewBox(p, scene.map.viewBox))
             .map((p) => `${p.x},${p.y}`)
@@ -160,8 +189,9 @@ export function MapCanvas({
               points={points}
               fill="none"
               stroke={THREAT_COLORS[target.threatLevel]}
-              strokeWidth={2}
-              strokeOpacity={0.82}
+              strokeWidth={target.dispositionStatus === "in_progress" ? 3 : 2}
+              strokeOpacity={target.dispositionStatus === "in_progress" ? 1 : 0.82}
+              strokeDasharray={target.dispositionStatus === "in_progress" ? "8 4" : undefined}
             />
           );
         })}
@@ -170,6 +200,7 @@ export function MapCanvas({
           const pos = normToViewBox(target.position, scene.map.viewBox);
           const selected = selectedTargetId === target.targetId;
           const color = THREAT_COLORS[target.threatLevel];
+          const isProcessing = target.dispositionStatus === "in_progress";
 
           return (
             <g
@@ -180,11 +211,34 @@ export function MapCanvas({
                 onTargetSelect?.(target.targetId);
               }}
             >
+              {isProcessing && (
+                <>
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={48}
+                    fill="none"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    strokeOpacity={0.95}
+                    strokeDasharray="6 4"
+                  />
+                  <circle
+                    cx={pos.x}
+                    cy={pos.y}
+                    r={36}
+                    fill="rgba(239,68,68,0.18)"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    strokeOpacity={0.9}
+                  />
+                </>
+              )}
               {selected && (
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={16}
+                  r={isProcessing ? 40 : 32}
                   fill="rgba(255,255,255,0.28)"
                   stroke={color}
                   strokeWidth={3}
@@ -194,14 +248,14 @@ export function MapCanvas({
               <circle
                 cx={pos.x}
                 cy={pos.y}
-                r={8}
+                r={16}
                 fill={color}
                 stroke="rgba(255,255,255,0.95)"
                 strokeWidth={2}
-                style={{ filter: `drop-shadow(0 0 10px ${color})` }}
+                style={{ filter: `drop-shadow(0 0 ${isProcessing ? 18 : 10}px ${color})` }}
               />
               <text
-                x={pos.x + 12}
+                x={pos.x + 22}
                 y={pos.y - 10}
                 fill="#0f172a"
                 stroke="rgba(255,255,255,0.92)"
@@ -212,9 +266,23 @@ export function MapCanvas({
               >
                 {target.callsign}
               </text>
+              {isProcessing && (
+                <text
+                  x={pos.x + 22}
+                  y={pos.y - 30}
+                  fill="#ef4444"
+                  stroke="rgba(255,255,255,0.88)"
+                  strokeWidth={1}
+                  paintOrder="stroke"
+                  fontSize={20}
+                  fontWeight={700}
+                >
+                  处理中
+                </text>
+              )}
               <text
-                x={pos.x + 12}
-                y={pos.y + 8}
+                x={pos.x + 22}
+                y={pos.y + 14}
                 fill="rgba(15,23,42,0.88)"
                 stroke="rgba(255,255,255,0.88)"
                 strokeWidth={1}

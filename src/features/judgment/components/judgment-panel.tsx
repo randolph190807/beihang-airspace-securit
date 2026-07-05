@@ -35,18 +35,6 @@ function zoneText(zone: string) {
   return map[zone] ?? zone;
 }
 
-function canDispatch(
-  effectiveSegment: string,
-  zone: string,
-  manualOverride: ManualTag | null,
-): boolean {
-  if (zone === "outside") return false;
-  if (effectiveSegment === "unknown") {
-    return manualOverride === "alert" || manualOverride === "warning";
-  }
-  return effectiveSegment === "alert" || effectiveSegment === "warning";
-}
-
 function parseSuccessRate(value: string) {
   const numericValue = Number(value.replace(/[^\d.]/g, ""));
   return Number.isFinite(numericValue) ? numericValue : -1;
@@ -107,10 +95,7 @@ export function JudgmentPanel({ className }: { className?: string }) {
   }, [target?.demoSegment, target?.manualOverride]);
 
   const dispatched = target ? isDispatched(target.targetId) : false;
-  const dispatchEnabled =
-    target &&
-    !dispatched &&
-    canDispatch(target.effectiveSegment, target.zone, target.manualOverride);
+  const dispatchEnabled = !dispatched && !!activeSchemeId;
 
   if (!target || target.role !== "demo" || !target.visible) {
     return (
@@ -145,6 +130,10 @@ export function JudgmentPanel({ className }: { className?: string }) {
               "inline-flex items-center justify-start gap-2",
             ])}
           >
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: THREAT_COLORS[target.threatLevel] }}
+            />
             <h1>当前目标 {target.callsign}</h1>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -316,28 +305,22 @@ export function JudgmentPanel({ className }: { className?: string }) {
 
         <button
           type="button"
-          disabled={!dispatchEnabled || !activeSchemeId}
+          disabled={!dispatchEnabled}
           onClick={() => {
             if (!activeSchemeId) return;
             void dispatchJudgment(target.targetId, activeSchemeId);
           }}
-          className={[
+          className={cn(
             "mt-3 w-full rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
             dispatched
               ? "border border-cyan-300/30 bg-cyan-500/20 text-cyan-50"
               : dispatchEnabled
-                ? "border border-red-400/40 bg-red-500/20 text-red-50 hover:bg-red-500/30"
-                : "cursor-not-allowed border border-white/10 bg-white/5 text-blue-100/35",
-          ].join(" ")}
+                ? "bg-red-500 text-white hover:bg-red-500"
+                : "cursor-not-allowed bg-slate-600 text-slate-300",
+          )}
         >
           {dispatched ? "已下发处置，等待处置结果" : "一键下发现场处理方案"}
         </button>
-
-        {target.effectiveSegment === "unknown" && !target.manualOverride && (
-          <p className="mt-2 text-[11px] text-amber-200/70">
-            不明目标请先标记为「警报」或「预警」后再下发处置
-          </p>
-        )}
       </div>
     </aside>
   );
