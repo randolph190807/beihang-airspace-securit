@@ -2,9 +2,11 @@ import { useState, type ReactNode } from "react";
 import { useMonitoring } from "@/features/monitoring/monitoring-context";
 import { normToViewBox } from "@/features/monitoring/lib/coordinates";
 import { MapScaleControl, clampMapScale } from "@/features/monitoring/components/map-scale-control";
-import { THREAT_COLORS } from "@/features/monitoring/types";
+import { THREAT_COLORS, type ThreatLevel } from "@/features/monitoring/types";
 import { cn } from "@/lib/utils";
 import bg2 from "@/static/6b960a34a10faacc10d5192b2a0dd5a3.png";
+
+const NON_DANGEROUS_LEVELS: ThreatLevel[] = ["friendly", "none", "normal"];
 
 export function MapCanvas({
   children,
@@ -57,7 +59,7 @@ export function MapCanvas({
   const visibleTargets = targets.filter((target) => {
     if (!target.visible) return false;
     if (!hideNonThreat) return true;
-    return target.threatLevel !== "normal";
+    return !NON_DANGEROUS_LEVELS.includes(target.threatLevel);
   });
 
   return (
@@ -205,7 +207,7 @@ export function MapCanvas({
                 stroke="rgba(255,255,255,0.92)"
                 strokeWidth={1.5}
                 paintOrder="stroke"
-                fontSize={32}
+                fontSize={27}
                 fontWeight={500}
               >
                 {target.callsign}
@@ -215,9 +217,9 @@ export function MapCanvas({
                 y={pos.y + 8}
                 fill="rgba(15,23,42,0.88)"
                 stroke="rgba(255,255,255,0.88)"
-                strokeWidth={1.2}
+                strokeWidth={1}
                 paintOrder="stroke"
-                fontSize={24}
+                fontSize={27}
                 fontWeight={500}
               >
                 {Math.round(target.altitudeM)}m

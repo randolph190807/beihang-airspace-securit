@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Brain, ClipboardList, ShieldAlert, Tag } from "lucide-react";
+import { Brain, Check, ChevronDown, ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAiStream, useJudgmentTemplate } from "@/features/judgment/hooks/use-judgment-template";
 import { useMonitoring } from "@/features/monitoring/monitoring-context";
 import { cn } from "@/lib/utils";
 import { THREAT_COLORS, type ManualTag, type ThreatLevel } from "@/features/monitoring/types";
+import type { DispositionScheme } from "@/features/judgment/types";
 
 function threatText(level: ThreatLevel) {
   const map: Record<ThreatLevel, string> = {
@@ -39,6 +47,27 @@ function canDispatch(
   return effectiveSegment === "alert" || effectiveSegment === "warning";
 }
 
+function parseSuccessRate(value: string) {
+  const numericValue = Number(value.replace(/[^\d.]/g, ""));
+  return Number.isFinite(numericValue) ? numericValue : -1;
+}
+
+const MANUAL_TAG_OPTIONS: Array<{ tag: ManualTag; label: string }> = [
+  { tag: "alert", label: "标记警报" },
+  { tag: "friendly", label: "标记白名单" },
+  { tag: "normal", label: "标记无风险" },
+];
+
+function getRecommendedScheme(schemes: DispositionScheme[]) {
+  if (schemes.length === 0) return null;
+
+  return schemes.reduce((best, current) => {
+    return parseSuccessRate(current.successRate) > parseSuccessRate(best.successRate)
+      ? current
+      : best;
+  }, schemes[0]);
+}
+
 export function JudgmentPanel({ className }: { className?: string }) {
   const { targets, selectedTargetId, dispatchJudgment, isDispatched, applyManualTag } =
     useMonitoring();
@@ -66,8 +95,16 @@ export function JudgmentPanel({ className }: { className?: string }) {
   }, [streamKey]);
 
   const schemes = template?.schemes ?? [];
-  const activeSchemeId =
-    selectedSchemeId ?? schemes.find((s) => s.recommended)?.id ?? schemes[0]?.id ?? null;
+  const recommendedScheme = useMemo(() => getRecommendedScheme(schemes), [schemes]);
+  const activeSchemeId = selectedSchemeId ?? (aiDone ? recommendedScheme?.id : null) ?? null;
+  const selectedManualTag = useMemo(() => {
+    const options =
+      target?.demoSegment === "unknown"
+        ? [...MANUAL_TAG_OPTIONS, { tag: "warning" as ManualTag, label: "标记预警" }]
+        : MANUAL_TAG_OPTIONS;
+
+    return options.find((option) => option.tag === target?.manualOverride) ?? null;
+  }, [target?.demoSegment, target?.manualOverride]);
 
   const dispatched = target ? isDispatched(target.targetId) : false;
   const dispatchEnabled =
@@ -101,27 +138,57 @@ export function JudgmentPanel({ className }: { className?: string }) {
       )}
     >
       <div className="border-b border-cyan-200/10 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-cyan-50">
-            {template?.title ?? "预警研判"}-当前目标 {target.callsign}
-          </h3>
+        <div className="flex items-center justify-between gap-3">
+          <div
+            className={cn([
+              "min-w-0 font-semibold text-cyan-50 ",
+              "inline-flex items-center justify-start gap-2",
+            ])}
+          >
+            <h1>当前目标 {target.callsign}</h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 text-gray-800/80 text-xs p-2 h-8 bg-gray-100"
+                >
+                  {selectedManualTag?.label ?? "标记飞行物"}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {MANUAL_TAG_OPTIONS.map((option) => (
+                  <DropdownMenuItem
+                    key={option.tag}
+                    onSelect={() => void applyManualTag(target.targetId, option.tag)}
+                    className="justify-between"
+                  >
+                    <span>{option.label}</span>
+                    {target.manualOverride === option.tag && (
+                      <Check className="h-4 w-4 text-cyan-200" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                {target.demoSegment === "unknown" && (
+                  <DropdownMenuItem
+                    onSelect={() => void applyManualTag(target.targetId, "warning")}
+                    className="justify-between"
+                  >
+                    <span>标记预警</span>
+                    {target.manualOverride === "warning" && (
+                      <Check className="h-4 w-4 text-cyan-200" />
+                    )}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <p className="mt-1 text-xs text-blue-100/45"></p>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto">
-        {/* {template?.approachWarning && target.zone !== "outside" && (
-          <div className="rounded-md border border-red-400/30 bg-red-950/30 px-3 py-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-red-200">
-              <AlertTriangle className="h-4 w-4" />
-              {template.approachWarning.label}
-            </div>
-            <p className="mt-1 text-xs leading-5 text-red-100/70">
-              {template.approachWarning.description}
-            </p>
-          </div>
-        )} */}
-
+      <div className="flex-1 overflow-y-auto pb-4">
         <section className="rounded-md border border-gray-400/60 bg-gray-700/80 p-3 m-3">
           <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-cyan-100">
             <ClipboardList className="h-4 w-4" />
@@ -189,38 +256,54 @@ export function JudgmentPanel({ className }: { className?: string }) {
           {error && <p className="text-xs text-red-300">{error}</p>}
           {!loading && !error && <p className="text-xs leading-6 text-blue-100/75">{aiText}</p>}
         </section>
+      </div>
 
+      <div className="sticky bottom-0 shrink-0 border-t border-cyan-200/10 bg-[#06162f]/95 p-4 backdrop-blur">
         {schemes.length > 0 && (
-          <section className="rounded-md border border-gray-400/60 bg-gray-700/80 p-3 m-3">
-            <h4 className="mb-3 text-sm font-medium text-cyan-100">处置方案</h4>
-            <div className="space-y-2">
+          <section className="">
+            <div className="mb-3 empty:hidden">
+              {!aiDone && (
+                <span className="text-[11px] text-blue-100/45">AI判定完成后展示推荐与成功率</span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               {schemes.map((scheme) => {
                 const active = scheme.id === activeSchemeId;
+                const isRecommended = aiDone && scheme.id === recommendedScheme?.id;
+
                 return (
                   <button
                     key={scheme.id}
                     type="button"
                     onClick={() => setSelectedSchemeId(scheme.id)}
-                    className={[
-                      "w-full rounded-md border p-3 text-left transition-colors",
+                    className={cn(
+                      "rounded-lg border p-3 text-left transition-colors",
                       active
-                        ? "border-cyan-200 bg-cyan-900"
-                        : "border-gray-500 hover:bg-white/[0.04]",
-                    ].join(" ")}
+                        ? "border-cyan-200 bg-cyan-900/70 shadow-[0_0_0_1px_rgba(165,243,252,0.15)]"
+                        : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]",
+                    )}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-cyan-50">
-                        {scheme.name}
-                        {scheme.recommended && (
-                          <span className="ml-2 text-xs text-amber-300">★推荐</span>
-                        )}
-                      </span>
-                      <span className="text-xs text-emerald-200/80">
-                        成功率 {scheme.successRate}
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-medium text-cyan-50">{scheme.name}</span>
+                          {isRecommended && (
+                            <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] text-amber-200">
+                              推荐
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs leading-5 text-blue-100/55">
+                          {scheme.description}
+                        </p>
+                      </div>
+                      {aiDone && (
+                        <span className="shrink-0 text-[11px] font-medium text-emerald-200/85">
+                          {scheme.successRate}
+                        </span>
+                      )}
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-blue-100/55">{scheme.description}</p>
-                    <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-blue-100/45">
+                    <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-blue-100/45">
                       <span>范围 {scheme.range}</span>
                       <span>风险 {scheme.risk}</span>
                       <span>{scheme.constraint}</span>
@@ -231,9 +314,7 @@ export function JudgmentPanel({ className }: { className?: string }) {
             </div>
           </section>
         )}
-      </div>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-cyan-200/10 bg-[#06162f]/95 p-4 backdrop-blur">
         <button
           type="button"
           disabled={!dispatchEnabled || !activeSchemeId}
@@ -242,7 +323,7 @@ export function JudgmentPanel({ className }: { className?: string }) {
             void dispatchJudgment(target.targetId, activeSchemeId);
           }}
           className={[
-            "w-full rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+            "mt-3 w-full rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
             dispatched
               ? "border border-cyan-300/30 bg-cyan-500/20 text-cyan-50"
               : dispatchEnabled
@@ -250,52 +331,13 @@ export function JudgmentPanel({ className }: { className?: string }) {
                 : "cursor-not-allowed border border-white/10 bg-white/5 text-blue-100/35",
           ].join(" ")}
         >
-          {dispatched ? "已下发处置，等待处置结果" : "一键下发现场处置"}
+          {dispatched ? "已下发处置，等待处置结果" : "一键下发现场处理方案"}
         </button>
 
         {target.effectiveSegment === "unknown" && !target.manualOverride && (
           <p className="mt-2 text-[11px] text-amber-200/70">
             不明目标请先标记为「警报」或「预警」后再下发处置
           </p>
-        )}
-
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          {(
-            [
-              { tag: "alert" as ManualTag, label: "标记警报" },
-              { tag: "friendly" as ManualTag, label: "标记白名单" },
-              { tag: "normal" as ManualTag, label: "标记无风险" },
-            ] as const
-          ).map(({ tag, label }) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => void applyManualTag(target.targetId, tag)}
-              className={[
-                "rounded border px-2 py-1.5 text-[11px] transition-colors",
-                target.manualOverride === tag
-                  ? "border-cyan-200/30 bg-cyan-200/15 text-cyan-50"
-                  : "border-white/10 text-blue-100/60 hover:bg-white/5",
-              ].join(" ")}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {target.demoSegment === "unknown" && (
-          <button
-            type="button"
-            onClick={() => void applyManualTag(target.targetId, "warning")}
-            className={[
-              "mt-2 w-full rounded border px-2 py-1.5 text-[11px] transition-colors",
-              target.manualOverride === "warning"
-                ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-                : "border-white/10 text-blue-100/60 hover:bg-white/5",
-            ].join(" ")}
-          >
-            标记预警
-          </button>
         )}
       </div>
     </aside>
