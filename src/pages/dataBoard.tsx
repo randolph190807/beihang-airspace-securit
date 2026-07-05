@@ -32,7 +32,7 @@ const statData = [
   },
   {
     value: "23",
-    label: "威胁事件",
+    label: "警报事件",
     compareText: "3 起",
     compareType: "up" as const,
     valueColor: "red" as const,
@@ -73,7 +73,7 @@ const trend7Data = [
   { day: "周日", count: 279 },
 ];
 
-// 2.威胁等级分布 饼图
+// 2.警报等级分布 饼图
 const threatPieData = [
   { name: "警报", value: 23, color: "#ef4444" },
   { name: "预警", value: 58, color: "#eab308" },
@@ -113,7 +113,7 @@ const droneTopData = [
 
 // 6.目标身份分布横向条
 const identityData = [
-  { name: "确认威胁", val: 18, color: "#ef4444" },
+  { name: "确认警报", val: 18, color: "#ef4444" },
   { name: "未知待研判", val: 28, color: "#eab308" },
   { name: "固定翼", val: 39, color: "#22c55e" },
   { name: "己方报备", val: 15, color: "#3b82f6" },
@@ -187,9 +187,9 @@ export function DataBoardPage() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          {/* 右：威胁等级环形饼图 */}
+          {/* 右：警报等级环形饼图 */}
           <div className={chartCardVariants()}>
-            <h3 className="text-sm text-slate-300 mb-3">威胁等级分布</h3>
+            <h3 className="text-sm text-slate-300 mb-3">警报等级分布</h3>
             <div className="flex items-center justify-between h-[300px]">
               <ResponsiveContainer width="60%" height="100%">
                 <PieChart>

@@ -77,6 +77,14 @@ export function resolveThreatLevel(
     return "none";
   }
 
+  if (target.demoSegment === "alert") return "alert";
+  if (target.demoSegment === "warning") return "warning";
+  if (target.demoSegment === "unknown") {
+    if (zone === "outside") return "unknown";
+    if (zone === "track") return "warning";
+    return "alert";
+  }
+
   if (zone === "counter") return "alert";
   if (zone === "track") return "warning";
   if (zone === "warning") {

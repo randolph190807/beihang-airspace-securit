@@ -120,6 +120,27 @@ export function MapCanvas({
             <stop offset="0%" stopColor="rgba(34,211,238,0.08)" />
             <stop offset="100%" stopColor="rgba(3,16,37,0)" />
           </radialGradient>
+          <style>
+            {`
+              .selected-target-pulse {
+                transform-box: fill-box;
+                transform-origin: center;
+                animation: selected-target-pulse 750ms linear infinite;
+              }
+
+              @keyframes selected-target-pulse {
+                from {
+                  transform: scale(0);
+                  opacity: 1;
+                }
+
+                to {
+                  transform: scale(3);
+                  opacity: 0.2;
+                }
+              }
+            `}
+          </style>
         </defs>
 
         <rect x={0} y={0} width={vw} height={vh} fill="url(#mapGlow)" />
@@ -238,11 +259,12 @@ export function MapCanvas({
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isProcessing ? 40 : 32}
-                  fill="rgba(255,255,255,0.28)"
+                  r={16}
+                  fill={color}
                   stroke={color}
-                  strokeWidth={3}
+                  strokeWidth={0}
                   strokeOpacity={0.85}
+                  className="selected-target-pulse"
                 />
               )}
               <circle

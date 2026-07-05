@@ -18,6 +18,7 @@ function threatText(level: ThreatLevel) {
     friendly: "己方",
     none: "无威胁",
     normal: "非威胁",
+    unknown: "未知",
     warning: "预警",
     alert: "警报",
     disposed: "已处置",

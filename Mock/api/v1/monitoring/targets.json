@@ -63,7 +63,7 @@
       "category": "uav",
       "role": "demo",
       "demoSegment": "alert",
-      "threatLevel": "normal",
+      "threatLevel": "alert",
       "visible": false,
       "motion": {
         "type": "linear",
@@ -83,7 +83,7 @@
       "category": "uav",
       "role": "demo",
       "demoSegment": "unknown",
-      "threatLevel": "normal",
+      "threatLevel": "unknown",
       "visible": false,
       "motion": {
         "type": "linear",

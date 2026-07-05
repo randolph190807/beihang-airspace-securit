@@ -7,7 +7,8 @@ import { toast } from "sonner";
 const THREAT_PRIORITY: Record<ThreatLevel, number> = {
   alert: 5,
   warning: 4,
-  normal: 3,
+  unknown: 3,
+  normal: 2,
   friendly: 2,
   none: 1,
   disposed: 0,
@@ -18,6 +19,7 @@ function threatLabel(level: ThreatLevel) {
     friendly: "己方",
     none: "鸟群",
     normal: "非威胁",
+    unknown: "未知",
     warning: "预警",
     alert: "警报",
     disposed: "已处置",
@@ -168,6 +170,21 @@ export function DemoControls({
       </button>
 
       <ThreatNotifier onProcessTarget={onProcessTarget} />
+
+      <div className="ml-2 inline-flex items-center gap-2 text-[11px] text-blue-100/55">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-red-500" />
+          警报
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-amber-400" />
+          预警
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-gray-700" />
+          未知
+        </span>
+      </div>
 
       <label className="flex items-center gap-2 text-xs text-blue-100/65 xl:ml-auto">
         <input

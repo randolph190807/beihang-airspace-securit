@@ -15,7 +15,7 @@ const NODE_LEGENDS = [
   { key: "bird", label: "鸟群", color: THREAT_COLORS.none, Icon: Bird },
   { key: "friendly", label: "己方", color: THREAT_COLORS.friendly, Icon: ShieldCheck },
   { key: "normal", label: "非危险", color: THREAT_COLORS.normal, Icon: ScanSearch },
-  { key: "alert", label: "告警", color: THREAT_COLORS.alert, Icon: AlertTriangle },
+  { key: "alert", label: "警报", color: THREAT_COLORS.alert, Icon: AlertTriangle },
 ] as const;
 
 type LegendFilterKey = (typeof NODE_LEGENDS)[number]["key"] | null;
@@ -23,8 +23,9 @@ type LegendFilterKey = (typeof NODE_LEGENDS)[number]["key"] | null;
 const THREAT_PRIORITY: Record<ThreatLevel, number> = {
   alert: 5,
   warning: 4,
-  normal: 3,
-  friendly: 2,
+  unknown: 3,
+  normal: 2,
+  friendly: 1,
   none: 1,
   disposed: 0,
 };
@@ -34,6 +35,7 @@ function threatLabel(level: ThreatLevel) {
     friendly: "己方",
     none: "鸟群",
     normal: "非威胁",
+    unknown: "未知",
     warning: "预警",
     alert: "警报",
     disposed: "已处置",
@@ -60,6 +62,7 @@ function targetIcon(target: { category: string; threatLevel: ThreatLevel }) {
   if (target.category === "bird_flock") return Bird;
   if (target.threatLevel === "friendly") return ShieldCheck;
   if (target.threatLevel === "normal") return ScanSearch;
+  if (target.threatLevel === "unknown") return Radar;
   if (target.threatLevel === "alert" || target.threatLevel === "warning") {
     return AlertTriangle;
   }
@@ -97,6 +100,9 @@ export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: str
   useEffect(() => {
     const changedIds: string[] = [];
     const nextThreatMap: Record<string, ThreatLevel> = {};
+    const persistentAlertIds = targets
+      .filter((target) => target.visible && target.threatLevel === "alert")
+      .map((target) => target.targetId);
 
     for (const target of targets) {
       nextThreatMap[target.targetId] = target.threatLevel;
@@ -108,16 +114,22 @@ export function TargetList({ onTargetSelect }: { onTargetSelect?: (targetId: str
 
     previousThreatRef.current = nextThreatMap;
 
-    if (changedIds.length === 0) return;
+    setAnimatedTargetIds((prev) => {
+      if (changedIds.length === 0) {
+        return persistentAlertIds;
+      }
 
-    setAnimatedTargetIds((prev) => Array.from(new Set([...prev, ...changedIds])));
+      return Array.from(new Set([...persistentAlertIds, ...prev, ...changedIds]));
+    });
 
     if (animationTimeoutRef.current) {
       window.clearTimeout(animationTimeoutRef.current);
     }
 
+    if (changedIds.length === 0) return;
+
     animationTimeoutRef.current = window.setTimeout(() => {
-      setAnimatedTargetIds([]);
+      setAnimatedTargetIds(persistentAlertIds);
       animationTimeoutRef.current = null;
     }, 1400);
   }, [targets]);

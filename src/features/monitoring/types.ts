@@ -6,6 +6,7 @@ export type AircraftType = "fixed_wing" | "multirotor" | "helicopter" | "unknown
 export type ThreatLevel =
   | "friendly"
   | "normal"
+  | "unknown"
   | "warning"
   | "alert"
   | "none"
@@ -118,6 +119,7 @@ export const THREAT_COLORS: Record<ThreatLevel, string> = {
   friendly: "#22c55e",
   none: "#94a3b8",
   normal: "#38bdf8",
+  unknown: "#374151",
   warning: "#eab308",
   alert: "#ef4444",
   disposed: "#64748b",
