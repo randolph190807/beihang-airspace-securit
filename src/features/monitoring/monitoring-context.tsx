@@ -46,11 +46,13 @@ interface MonitoringContextValue {
   targets: TargetRuntime[];
   selectedTargetId: string | null;
   showTrack: boolean;
+  hideNonThreat: boolean;
   speedMultiplier: number;
   polygonOriginMs: number;
   segmentStartAt: Record<string, number>;
   selectTarget: (targetId: string | null) => void;
   toggleTrack: () => void;
+  toggleHideNonThreat: () => void;
   startSegment: (segment: DemoSegment) => Promise<void>;
   startAll: () => Promise<void>;
   resetDemo: () => Promise<void>;
@@ -151,6 +153,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
   const [targets, setTargets] = useState<TargetRuntime[]>([]);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [showTrack, setShowTrack] = useState(false);
+  const [hideNonThreat, setHideNonThreat] = useState(false);
   const [speedMultiplier, setSpeedMultiplierState] = useState(1);
   const [polygonOriginMs] = useState(() => Date.now());
   const [segmentStartAt, setSegmentStartAt] = useState<Record<string, number>>({});
@@ -378,11 +381,13 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       targets,
       selectedTargetId,
       showTrack,
+      hideNonThreat,
       speedMultiplier,
       polygonOriginMs,
       segmentStartAt,
       selectTarget: setSelectedTargetId,
       toggleTrack: () => setShowTrack((v) => !v),
+      toggleHideNonThreat: () => setHideNonThreat((v) => !v),
       startSegment,
       startAll,
       resetDemo,
@@ -399,6 +404,7 @@ export function MonitoringProvider({ children }: { children: ReactNode }) {
       targets,
       selectedTargetId,
       showTrack,
+      hideNonThreat,
       speedMultiplier,
       polygonOriginMs,
       segmentStartAt,

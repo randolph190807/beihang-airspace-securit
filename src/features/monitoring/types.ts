@@ -2,6 +2,7 @@ export type DemoSegment = "alert" | "unknown" | "warning";
 export type MotionType = "polygonLoop" | "linear";
 export type MotionState = "idle" | "flying" | "hovering" | "disposed";
 export type ZoneLevel = "outside" | "warning" | "track" | "counter";
+export type AircraftType = "fixed_wing" | "multirotor" | "helicopter" | "unknown";
 export type ThreatLevel =
   | "friendly"
   | "normal"
@@ -45,7 +46,9 @@ export interface TargetDefinition {
   visible: boolean;
   motion: TargetMotion;
   metadata?: {
+    sn?: string;
     model?: string;
+    aircraftType?: AircraftType;
     identity?: string;
   };
 }
