@@ -9,7 +9,6 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const navItems = [
   { to: "/realtime", label: "区域监控", icon: Radar },
-  { to: "/dashboard", label: "大盘数据", icon: LayoutDashboard },
   { to: "/dataBoard", label: "驾驶舱", icon: LayoutDashboard },
 ];
 
@@ -70,7 +69,7 @@ export function CommandLayout() {
             })}
           </nav>
         </aside>
-        <main className="flex-1 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.13),transparent_32%),linear-gradient(135deg,#061833_0%,#071326_54%,#041126_100%)] p-4">
+        <main className="flex-1 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.13),transparent_32%),linear-gradient(135deg,#061833_0%,#071326_54%,#041126_100%)] p-3">
           <Outlet />
         </main>
       </div>

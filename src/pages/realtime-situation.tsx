@@ -28,9 +28,9 @@ function RealtimeContent() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <StatusBar />
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px_minmax(300px,360px)]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px_minmax(300px,360px)]">
         <div className="flex flex-col gap-3">
           <MapCanvas />
           <DemoControls />
