@@ -17,7 +17,7 @@ import {
   tagVariants,
 } from "../components/ui/mobile-variants";
 import { useProcessStep } from "../hooks/useProcessStep";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 // 工单模拟数据
 const orderData = {
@@ -51,8 +51,19 @@ export function MobileDisposeOrder() {
     }
     setEnableDynamic(flag);
   };
+
+  // 组件内
+  const fileInputRef = useRef<HTMLInputElement>(null)
   // 操作指引折叠面板开关
   // const [guideOpen, setGuideOpen] = useState(true);
+
+  // 文件上传处理函数
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    alert('文件上传成功')
+    // 清空input值，避免选同一个文件不触发change
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    next(false);
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 pb-safe max-w-md mx-auto">
@@ -120,7 +131,15 @@ export function MobileDisposeOrder() {
             <Camera size={48} className="text-slate-500 mb-3" />
             <span className="text-slate-400">对准目标拍照取证</span>
           </div>
-          <button className={cn(actionBtnVariants({ type: "success" }))} onClick={()=>next(false)}>
+          {/* 隐藏原生文件选择框 */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept="image/*" // 只允许图片，按需修改，如 "image/*,.pdf"
+            onChange={handleFileUpload}
+          />
+          <button className={cn(actionBtnVariants({ type: "success" }))} onClick={()=>fileInputRef.current?.click()}>
             <Camera size={24} />
             拍照取证并回传效果
           </button>
