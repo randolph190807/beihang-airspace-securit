@@ -284,26 +284,13 @@ export function DashboardPage() {
           </div>
           {/* 右：目标身份与飞行高度 */}
           <div className={chartCardVariants()}>
-            <h3 className="text-sm text-slate-300 mb-3">目标身份与飞行高度构成</h3>
-            <div className="mb-4">
-              <p className="text-xs text-slate-400 mb-2">目标身份构成</p>
-              {identityData.map((item,i)=>(
-                <div key={i} className="flex items-center gap-2 mb-1">
-                  <span className="w-3 h-2 rounded-sm" style={{backgroundColor:item.color}}></span>
-                  <span className="text-xs text-slate-300 w-20">{item.name}</span>
-                  <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{width:`${item.val}%`,backgroundColor:item.color}}></div>
-                  </div>
-                  <span className="text-xs text-slate-400 w-8 text-right">{item.val}%</span>
-                </div>
-              ))}
-            </div>
+            
             <div>
               <p className="text-xs text-slate-400 mb-2">飞行高度分层（低空/超低空特征）</p>
               {heightData.map((item,i)=>(
-                <div key={i} className="flex items-center gap-2 mb-1">
+                <div key={i} className="flex items-center gap-2 mb-10">
                   <span className="w-3 h-2 rounded-sm" style={{backgroundColor:item.color}}></span>
-                  <span className="text-xs text-slate-300 w-20">{item.name}</span>
+                  <span className="text-xs text-slate-300 w-30">{item.name}</span>
                   <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{width:`${item.val}%`,backgroundColor:item.color}}></div>
                   </div>
