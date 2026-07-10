@@ -112,10 +112,8 @@ const radarData = [
 
 // 5.机型出现TOP5
 const droneTopData = [
-  { name: "大疆 Mavic", val: 312 },
-  { name: "大疆 Air", val: 208 },
-  { name: "穿越机", val: 158 },
-  { name: "中型航(岛/气球)", val: 98 },
+  { name: "固定翼", val: 163 },
+  { name: "四旋翼", val: 98 },
   { name: "六旋翼", val: 64 },
 ];
 
@@ -256,7 +254,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           {/* 左：机型出现排行TOP5 */}
           <div className={chartCardVariants()}>
-            <h3 className="text-sm text-slate-300 mb-3">机型出现排行 TOP5</h3>
+            <h3 className="text-sm text-slate-300 mb-3">机型出现排行 TOP3</h3>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart layout="vertical" data={droneTopData}>
                 <CartesianGrid stroke="#333a54" horizontal={true} vertical={false} />
