@@ -38,7 +38,7 @@ export default function StatCard({
       {/* 卡片标题 */}
       <div className="text-slate-400 text-lg mb-3">{label}</div>
       {/* 环比变化 */}
-      {compareText && (
+      {/* {compareText && (
         <div
           className={cn("text-base flex items-center gap-1", {
             "text-red-400": compareType === "up",
@@ -47,7 +47,7 @@ export default function StatCard({
         >
           {compareType === "up" ? "▲" : "▼"} {compareText}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
